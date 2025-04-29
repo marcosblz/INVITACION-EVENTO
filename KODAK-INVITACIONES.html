@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro Invitación Evento</title>
+  <style>
+    :root {
+      --kodak-red: #E4002B;
+      --kodak-yellow: #F4B400;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: var(--kodak-yellow);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    h2 {
+      color: var(--kodak-red);
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: clamp(1.4rem, 5vw, 1.8rem);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input, select {
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      width: 100%;
+      margin-bottom: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--kodak-red);
+      outline: none;
+    }
+
+    .social-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .social-group select {
+      flex: 1.2;
+      min-width: 40%;
+    }
+
+    .social-group input {
+      flex: 2;
+      min-width: 55%;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--kodak-red);
+      color: var(--kodak-yellow);
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #b00021;
+    }
+
+    #successMessage {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: fadeIn 1s forwards;
+    }
+
+    #successMessage svg {
+      width: 80px;
+      height: 80px;
+      fill: var(--kodak-red);
+      margin-bottom: 20px;
+    }
+
+    #successMessage h3 {
+      color: var(--kodak-red);
+      font-size: 1.4rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; display: none; }
+    }
+
+    @media (max-width: 360px) {
+      .social-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="formContainer">
+  <h2>REGISTRO INVITACION EVENTO</h2>
+  <form id="registrationForm" novalidate>
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" name="nombre" required>
+
+    <label for="apellidos">Apellidos</label>
+    <input type="text" id="apellidos" name="apellidos" required>
+
+    <label>Redes Sociales</label>
+    <div id="socialWrapper"></div>
+
+    <label for="correo">Correo Electrónico</label>
+    <input type="email" id="correo" name="correo" required>
+
+    <button type="submit" class="submit-btn">Enviar</button>
+  </form>
+</div>
+
+<div id="successMessage">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M20.29 5.71a1 1 0 0 0-1.42 0L9 15.59l-3.29-3.3a1 1 0 0 0-1.42 1.42l4 4a1 1 0 0 0 1.42 0l10-10a1 1 0 0 0 0-1.42z"/>
+  </svg>
+  <h3>¡Registro completado!</h3>
+</div>
+
+<script>
+  const form = document.getElementById('registrationForm');
+  const container = document.getElementById('formContainer');
+  const success = document.getElementById('successMessage');
+  const socialWrapper = document.getElementById('socialWrapper');
+
+  const redesDisponibles = ["Instagram", "YouTube", "TikTok"];
+  const maxSocials = 3;
+  let redesUsadas = [];
+
+  function createSocialGroup(index) {
+    if (index >= maxSocials) return;
+
+    const group = document.createElement('div');
+    group.className = 'social-group';
+
+    const select = document.createElement('select');
+    select.innerHTML = `<option value="">Red</option>` + 
+      redesDisponibles
+        .filter(red => !redesUsadas.includes(red))
+        .map(red => `<option value="${red}">${red}</option>`)
+        .join('');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = "@usuario";
+
+    if (index === 0) {
+      select.required = true;
+      input.required = true;
+    }
+
+    group.appendChild(select);
+    group.appendChild(input);
+    socialWrapper.appendChild(group);
+
+    const checkAndAddNext = () => {
+      if (select.value && input.value.trim() && !group.dataset.filled) {
+        redesUsadas.push(select.value);
+        group.dataset.filled = "true";
+        createSocialGroup(index + 1);
+      }
+    };
+
+    select.addEventListener('change', checkAndAddNext);
+    input.addEventListener('input', checkAndAddNext);
+  }
+
+  createSocialGroup(0); // solo el primero es obligatorio
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    let valid = true;
+
+    const nombre = form.querySelector('#nombre');
+    const apellidos = form.querySelector('#apellidos');
+    const correo = form.querySelector('#correo');
+    const socialGroups = socialWrapper.querySelectorAll('.social-group');
+
+    [nombre, apellidos, correo].forEach(input => {
+      if (!input.value.trim()) {
+        input.style.borderColor = '#ff0000';
+        valid = false;
+      } else {
+        input.style.borderColor = '#ccc';
+      }
+    });
+
+    // Validar SOLO la primera red social
+    const firstGroup = socialGroups[0];
+    const firstSelect = firstGroup.querySelector('select');
+    const firstInput = firstGroup.querySelector('input');
+
+    if (!firstSelect.value || !firstInput.value.trim()) {
+      firstSelect.style.borderColor = firstInput.style.borderColor = '#ff0000';
+      valid = false;
+    } else {
+      firstSelect.style.borderColor = firstInput.style.borderColor = '#ccc';
+    }
+
+    if (valid) {
+      container.style.animation = 'fadeOut 0.5s forwards';
+      setTimeout(() => {
+        container.remove();
+        success.style.display = 'flex';
+      }, 500);
+    } else {
+      alert('Por favor, completa los campos obligatorios ❗');
+    }
+  });
+</script>
+
+</body>
+</html>
